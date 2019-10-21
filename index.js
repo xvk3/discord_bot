@@ -75,11 +75,12 @@ client.on("message", async message => {
   }
 
   if(command === "uwu")	{
-    message.channel.send("owo <@90467768419237888>");
+    message.channel.send("owo");
     message.channel.send(message.author.tag);
     //console.log(command);
   }
 
+  //this is bugged currently
   if(command === "react") {
     if(emoji.hasEmoji(args[0])) {
       const e = emoji.get(args[0]);
