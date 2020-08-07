@@ -10,7 +10,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "child_process": "^1.0.2",
     "discord.js": "^11.5.1",
-    "node-emoji": "^1.10.0"
+    "node-emoji": "^1.10.0",
+    "promise": "^8.0.3"
   }
 }

@@ -1,24 +1,45 @@
-// Load up the discord.js library
+// Libraries
 const Discord = require("discord.js");
+const Promise = require('promise');
 const fs = require('fs');
 const emoji = require('node-emoji');
-
-// This is your client. Some people call it `bot`, some people call it `self`, 
-// some might call it `cootchie`. Either way, when you see `client.something`, or `bot.something`,
-// this is what we're refering to. Your client.
-const client = new Discord.Client();
-
-// Here we load the config.json file that contains our token and our prefix values. 
+const spawn = require('child_process').spawn
+// Load config.json - contains bot token and prefix value
 const config = require("./config.json");
 // config.token contains the bot's token
 // config.prefix contains the message prefix.
 
+// Initialise Discord client
+const client = new Discord.Client();
+
 client.on("ready", () => {
   // This event will run if the bot starts, and logs in, successfully.
   console.log(`Bot has started, with ${client.users.size} users, in ${client.channels.size} channels of ${client.guilds.size} guilds.`); 
-  // Example of changing the bot's playing game to something useful. `client.user` is what the
-  // docs refer to as the "ClientUser".
+  // TODO add list of possible options for activity type
   client.user.setActivity("BOT V0.1", { type: "STREAMING"});
+  
+  // Server
+  var list = client.guilds.get("740902433491779614");
+
+  // TODO Loop over members for presence & game activity checks
+  setInterval(function(){
+
+    list.members.forEach((member)=>{
+      const guild = member.guild;
+      const playingRole = guild.roles.find(role => role.name === "Playing");
+       
+      const game = member.presence.game;
+
+      if(game) {
+        if (game.applicationID === "449738622619353088") {
+          member.addRole(playingRole).then(() => console.log(`${playingRole.name} added to ${newMember.user.tag}.`)).catch(O_o=>{});
+        } else {
+          member.removeRole(playingRole).then(() => console.log(`${playingRole.name} removed from ${newMember.user.tag}.`)).catch(O_o=>{});
+        }
+      }
+    })
+  }, 50)
+
 });
 
 client.on("guildCreate", guild => {
@@ -33,74 +54,175 @@ client.on("guildDelete", guild => {
   client.user.setActivity(`Serving ${client.guilds.size} servers`);
 });
 
+/*client.on("guildMemberAdd", (guild, member) => {
+  // This event triggers when a new member joins a guild
+
+});*/
+
+client.on('presenceUpdate', (oldMember, newMember) => {
+  const guild = newMember.guild;
+  const playingRole = guild.roles.find(role => role.name === "Playing");
+
+  const game = newMember.presence.game;
+  const oldGame = oldMember.presence.game && [0, 1].includes(oldMember.presence.game.type) ? true : false;
+  const newGame = newMember.presence.game && [0, 1].includes(newMember.presence.game.type) ? true : false;
+
+  console.log(`${newMember.user.tag} is playing ${game}`);
+
+  if (!oldGame && newGame && game.applicationID === "449738622619353088") {
+    newMember.addRole(playingRole).then(() => console.log(`${playingRole.name} added to ${newMember.user.tag}.`)).catch(O_o=>{});
+  } else {
+    newMember.removeRole(playingRole).then(() => console.log(`${playingRole.name} removed from ${newMember.user.tag}.`)).catch(O_o=>{});
+  }
+});
 
 client.on("message", async message => {
   // This event will run on every single message received, from any channel or DM.
 
-  // It's good practice to ignore other bots. This also makes your bot ignore itself
-  // and not get into a spam loop (we call that "botception").
+  // Ignore messages from other bots
   if(message.author.bot) return;
 
   // Also good practice to ignore any message that does not start with our prefix,
   // which is set in the configuration file.
+  // However, in this case I want to react to messages @ing the bot
   if(message.mentions.members.size !== 0)	{
-    console.log(`mentioned: ${message.mentions.members.first()} okay?`); 
-    console.log(`test: ${message.mentions.members.first(2)} sure?`);
     if(message.mentions.members.first() == "<@627507497007054858>") {
       console.log(`     ${message.author.id}`);
       console.log(`     ${message.guild.members.get(message.author.tag)}`);
-      message.channel.send(`Oi <@${message.author.id}> don't @ me`);
+      return message.react("\u2753").catch(O_o=>{});
     }
+  }
+
+  if(message.content.includes("uwu") || message.content.includes("owo")) {
+    return message.react("\u2764").catch(O_o=>{});
+  }
+  if(message.content.includes("Mich") || message.content.includes("mich") || message.content.includes("Mitch") || message.content.includes("mitch")) {
+    //message.react("\u1F49A").catch(O_o=>{});
+    //message.react("\u1F421").catch(O_o=>{});
+    //message.react("\u1F995").catch(O_o=>{});
+    //message.react("\u1F60D").catch(O_o=>{});
+    //const bss = client.emojis.find(emoji => emoji.name === "straightswords_baldersidesword");
+    //message.channel.send(bss);
+    //message.channel.send("\:blowfish:");
+    return 0;
+  }
+
+  if(message.content.startsWith("!")) {
+    return message.channel.send(`<@${message.author.id}> Bot commands start with '+'`);
   }
 
   if(message.content.indexOf(config.prefix) !== 0) {
     return;
   }
-  // Here we separate our "command" name, and our "arguments" for the command. 
+
+  // Here we separate our "command" name, and our "arguments" for the command.
   // e.g. if we have the message "+say Is this the real life?" , we'll get the following:
   // command = say
   // args = ["Is", "this", "the", "real", "life?"]
   const args = message.content.slice(config.prefix.length).trim().split(/ +/g);
   const command = args.shift().toLowerCase();
-  
-  // Start of command parsing 
+
+  if(command === "help") {
+    let embed = new Discord.RichEmbed({
+      "title": "Siegmeyer Command List",
+      "description": "Main list of commands for Siegmeyer (there are several easter eggs too)",
+      "fields": [{
+        "name": "+help",
+        "value": "Prints this message"
+      },
+      {
+        "name": "+ptde",
+        "value": "Prints the number of PTDE players"
+      },
+      {
+        "name": "+re",
+        "value": "Prints the number of DSR players"
+      },
+      {
+        "name": "+playing",
+        "value": "Prints the number of DSR players active in this server"
+      },
+      {
+        "name": "+cheats",
+        "value": "Provdes a link to download Cheat Engine, Gadget and CE scripts"
+      },
+      {
+        "name": "+poise",
+        "value": "Provides a link to a table of poise damage for each weapon and attack"
+      },
+      {
+        "name": "+tips",
+        "value": "Provides a link to some DSR tips"
+      },
+      {
+        "name": "+say [something]",
+        "value": "Prints something"
+      },
+      {
+        "name": "+joke",
+        "value": "Siegmeyer tells you a joke"
+      },
+      {
+        "name": "+write",
+        "value": "Remeber up to 10 characters"
+      },
+      {
+        "name": "+read",
+        "value": "Return the remebered text"
+      }
+    ],
+    "color": 0xFFFF
+    });
+    return message.channel.send({embed}).catch(console.log);
+  }
+
+
+  // Start of command parsing
   if(command === "say") {
-    // makes the bot say something and delete the message. As an example, it's open to anyone to use. 
-    // To get the "message" itself we join the `args` back into a string with spaces: 
+    // makes the bot say something and delete the message. As an example, it's open to anyone to use.
+    // To get the "message" itself we join the `args` back into a string with spaces:
     const sayMessage = args.join(" ");
-    // Then we delete the command message (sneaky, right?). The catch just ignores the error with a cute smiley thing.
-    message.delete().catch(O_o=>{}); 
+
+    if(message.member.roles.some(r=>["Mod"].includes(r.name)) ) {
+      message.delete().catch(O_o=>{});
+    }
+
     // And we get the bot to say the thing: 
     message.channel.send(sayMessage);
   }
 
+  /*
   if(command === "uwu")	{
-    message.channel.send("owo");
-    message.channel.send(message.author.tag);
-    //console.log(command);
+    const e = emoji.get("heart");
+    message.channel.send(`<@${message.author.id}> ${e}`);
+    console.log(command);
   }
 
-  //this is bugged currently
+  // This is currently bugged
+  // Get warnings regarding promises.
+  
   if(command === "react") {
     if(emoji.hasEmoji(args[0])) {
       const e = emoji.get(args[0]);
       console.log(e);
-      message.delete();
+      message.delete().catch(O_o=>{});
       message.channel.fetchMessages({limit: 1})
-        .then((msgCollection) => {
-          msgCollection.forEach((msg) => {
-            msg.react(e);
-        })
+        .then(function(msgCollection) {
+          msgCollection.forEach(function(msg) {
+            msg.react(e).catch(O_o=>{});
+        }).catch(O_o=>{});
       });
     } else {
       message.channel.send("unknown emoji");
+      console.log("unknown emoji");
     }
   }
+  */
 
   if(command === "write") {
     const write = args[0];
     if(write.length > 10) {
-      message.channel.send(`<@${message.author.id}> No data longer than 10 characters!`); 
+      message.channel.send(`<@${message.author.id}> No data longer than 10 characters!`);
     } else {
       fs.writeFile(`/glob/${message.author.id}.st`, write, function(err) {
         if(err) {
@@ -108,10 +230,90 @@ client.on("message", async message => {
         }
       console.log("The file was saved!");
       message.channel.send("Updated your record");
-      }); 
+      });
     }
   }
+  if(command === "read")  {
+    fs.readFile(`/glob/${message.author.id}.st`, "UTF8", function(err, data) {
+      if(err) {
+        return err;
+      }
+      const content = data;
+      message.channel.send(`<@${message.author.id}> "${content}"`);
+    });
+  }
 
+  if(command === "re") {
+    const players = spawn("/glob/bin/dsr.sh");
+    players.stdout.on("data", function(data) {
+      let embed = new Discord.RichEmbed({
+        "title": "Online DSR Players",
+        "description": `${data.toString()}`,
+        "color": 0xFFFF
+      });
+      return message.channel.send({embed}).catch(O_o=>{});
+    });
+  }
+
+  if(command === "ptde") {
+    const players = spawn("/glob/bin/ptde.sh");
+    players.stdout.on("data", function(data) {
+      let embed = new Discord.RichEmbed({
+        "title": "Online PTDE Players",
+        "description": `${data.toString()}`,
+        "color": 0xFFFF
+      });
+      return message.channel.send({embed}).catch(O_o=>{});
+    });
+  }
+
+  if(command === "playing") {
+    let memberWithRole = message.guild.members.filter(member => {
+      return member.roles.find(role => role.name === "Playing");
+    }).map(member => {
+      return member.user.username;
+    })
+    if(memberWithRole.length === 0) {
+      let embed = new Discord.RichEmbed({
+        "title": "There are no active DSR players in this server",
+        "color": 0xFFFF
+      });
+      return message.channel.send({embed});
+    } else if(memberWithRole.length === 1) {
+      var description = `${memberWithRole.length} DSR Player`;
+    } else {
+      var description = `${memberWithRole.length} DSR Players`;
+    }
+    let embed = new Discord.RichEmbed({
+      "title": description,
+      "description": memberWithRole.join("\n"),
+      "color": 0xFFFF
+    });
+    return message.channel.send({embed});
+  }
+
+  if(command === "fcf") {
+    message.channel.send("https://www.youtube.com/watch?v=IgHu7OyB3aA");
+    return 1;
+  }
+
+  if(command === "joke") {
+    return message.channel.send("Seneka08");
+  }
+
+  if(command === "cheats" || command === "cheat") {
+    return message.channel.send("http://www.xvk3.net/dsr/cheats.html");
+  }
+
+  if(command === "poise") {
+    return message.channel.send("http://www.xvk3.net/dsr/poise.html");
+  }
+
+  if(command === "tips") {
+    return message.channel.send("http://www.xvk3.net/dsr/tips.html");
+  }
+
+  /*
   if(command === "status") {
     message.channel.send("Not yet implemented");
   }
@@ -179,6 +381,7 @@ client.on("message", async message => {
     message.channel.bulkDelete(fetched)
       .catch(error => message.reply(`Couldn't delete messages because of: ${error}`));
   }
+  */
 });
 
 client.login(config.token);
