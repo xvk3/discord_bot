@@ -38,7 +38,7 @@ client.on("ready", () => {
         }
       }
     })
-  }, 50)
+  }, 60000)
 
 });
 
@@ -94,17 +94,10 @@ client.on("message", async message => {
   }
 
   if(message.content.includes("uwu") || message.content.includes("owo")) {
-    return message.react("\u2764").catch(O_o=>{});
+    message.react("❤️").catch(O_o=>{});
   }
   if(message.content.includes("Mich") || message.content.includes("mich") || message.content.includes("Mitch") || message.content.includes("mitch")) {
-    //message.react("\u1F49A").catch(O_o=>{});
-    //message.react("\u1F421").catch(O_o=>{});
-    //message.react("\u1F995").catch(O_o=>{});
-    //message.react("\u1F60D").catch(O_o=>{});
-    //const bss = client.emojis.find(emoji => emoji.name === "straightswords_baldersidesword");
-    //message.channel.send(bss);
-    //message.channel.send("\:blowfish:");
-    return 0;
+    message.react("💚").catch(O_o=>{});
   }
 
   if(message.content.startsWith("!")) {
@@ -243,11 +236,12 @@ client.on("message", async message => {
     });
   }
 
-  if(command === "re") {
+  if(command.startsWith("re")) {
     const players = spawn("/glob/bin/dsr.sh");
     players.stdout.on("data", function(data) {
+    title = "Online DSR Players" + "!".repeat(command.length - 2)
       let embed = new Discord.RichEmbed({
-        "title": "Online DSR Players",
+        "title": title,
         "description": `${data.toString()}`,
         "color": 0xFFFF
       });
@@ -255,11 +249,12 @@ client.on("message", async message => {
     });
   }
 
-  if(command === "ptde") {
+  if(command.startsWith("ptde")) {
     const players = spawn("/glob/bin/ptde.sh");
     players.stdout.on("data", function(data) {
+    title = "Online PTDE Players" + "!".repeat(command.length - 2)
       let embed = new Discord.RichEmbed({
-        "title": "Online PTDE Players",
+        "title": title,
         "description": `${data.toString()}`,
         "color": 0xFFFF
       });
@@ -280,16 +275,26 @@ client.on("message", async message => {
       });
       return message.channel.send({embed});
     } else if(memberWithRole.length === 1) {
-      var description = `${memberWithRole.length} DSR Player`;
+      var description = `${memberWithRole.length} DSR Player (Discord)`;
     } else {
-      var description = `${memberWithRole.length} DSR Players`;
+      var description = `${memberWithRole.length} DSR Players (Discord)`;
     }
     let embed = new Discord.RichEmbed({
       "title": description,
       "description": memberWithRole.join("\n"),
       "color": 0xFFFF
     });
-    return message.channel.send({embed});
+    var players = spawn("/glob/bin/scrape_steam.sh");
+    players.stdout.on("data", function(data) {
+      title = "Online DSR Players (Steam)"
+      let embed = new Discord.RichEmbed({
+        "title": title,
+        "description": `${data.toString()}`,
+        "color": 0xFFFF
+      });
+      return message.channel.send({embed}).catch(O_o=>{});
+    });
+    return message.channel.send({embed}); 
   }
 
   if(command === "fcf") {
@@ -298,7 +303,11 @@ client.on("message", async message => {
   }
 
   if(command === "joke") {
-    return message.channel.send("Seneka08");
+    return message.channel.send("Seneka08").then(sentMsg => { 
+      sentMsg.react("😂").catch(O_o=>{});
+      sentMsg.react("🤣").catch(O_o=>{});
+      sentMsg.react("😆").catch(O_o=>{});
+  });
   }
 
   if(command === "cheats" || command === "cheat") {
