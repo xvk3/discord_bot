@@ -4,6 +4,7 @@ const Promise = require('promise');
 const fs = require('fs');
 const emoji = require('node-emoji');
 const spawn = require('child_process').spawn
+const exec  = require('child_process').exec
 // Load config.json - contains bot token and prefix value
 const config = require("./config.json");
 // config.token contains the bot's token
@@ -82,9 +83,7 @@ client.on("message", async message => {
   // Ignore messages from other bots
   if(message.author.bot) return;
 
-  // Also good practice to ignore any message that does not start with our prefix,
-  // which is set in the configuration file.
-  // However, in this case I want to react to messages @ing the bot
+  // React to messages @ing the bot
   if(message.mentions.members.size !== 0)	{
     if(message.mentions.members.first() == "<@627507497007054858>") {
       console.log(`     ${message.author.id}`);
@@ -93,11 +92,36 @@ client.on("message", async message => {
     }
   }
 
-  if(message.content.includes("uwu") || message.content.includes("owo")) {
+  if( // React to "uwu" and "owo"
+     message.content.includes("uwu") || 
+     message.content.includes("owo")
+  ) {
     message.react("❤️").catch(O_o=>{});
   }
-  if(message.content.includes("Mich") || message.content.includes("mich") || message.content.includes("Mitch") || message.content.includes("mitch")) {
+  if( // React to "Mich"
+     message.content.includes("Mich") ||
+     message.content.includes("mich") ||
+     message.content.includes("Mitch") ||
+     message.content.includes("mitch")
+  ) {
     message.react("💚").catch(O_o=>{});
+  }
+  if( // React to "KOKSMA"
+     message.content.includes("Kok") ||
+     message.content.includes("kok") ||
+     message.content.includes("KOK") ||
+     message.content.includes("Koksma") ||
+     message.content.includes("koksma") || 
+     message.content.includes("KOKSMA")
+  ) {
+    message.react("❤️").catch(O_o=>{});
+  }
+  if( // React to "Mac"
+     message.content.includes("Mac") ||
+     message.content.includes("mac") ||
+     message.content.includes("MAC")
+  ) {
+    message.react("💖").catch(O_o=>{});
   }
 
   if(message.content.startsWith("!")) {
@@ -108,10 +132,6 @@ client.on("message", async message => {
     return;
   }
 
-  // Here we separate our "command" name, and our "arguments" for the command.
-  // e.g. if we have the message "+say Is this the real life?" , we'll get the following:
-  // command = say
-  // args = ["Is", "this", "the", "real", "life?"]
   const args = message.content.slice(config.prefix.length).trim().split(/ +/g);
   const command = args.shift().toLowerCase();
 
@@ -133,7 +153,7 @@ client.on("message", async message => {
       },
       {
         "name": "+playing",
-        "value": "Prints the number of DSR players active in this server"
+        "value": "Prints the number of DSR players active in this server and on my Steam friends list"
       },
       {
         "name": "+cheats",
@@ -154,6 +174,18 @@ client.on("message", async message => {
       {
         "name": "+joke",
         "value": "Siegmeyer tells you a joke"
+      },
+      {
+        "name": "+song",
+        "value": "Prints the current song Mich is listening to"
+      },
+      {
+        "name": "+colour / +color [colour]",
+        "value": "Changes your personal role colour"
+      },
+      {
+        "name": "+colours / +colors",
+        "value": "Prints the available colours for use with the +colour command"
       },
       {
         "name": "+write",
@@ -212,6 +244,53 @@ client.on("message", async message => {
   }
   */
 
+  if(command === "colour" || command === "color") {
+    var colours = ['#00FFFF', '#0000FF', '#AA00AA', '#FF0000', '#FF69B4', '#FFDF00', '#FFA500', '#FFA500', '#DCDCDC', '#010101', '#FFFFFF', '#2C2F33'];
+    var cnames  = ['cyan', 'blue', 'purple', 'red', 'pink', 'yellow', 'gold', 'orange', 'grey', 'black', 'white', 'invisible'];
+    if(cnames.indexOf(args[0]) >= 0)  {
+      var name = message.author.tag;
+      var role = message.guild.roles.find(roleVal => roleVal.name === name);
+      if(!role) {
+        console.log(`Need to create new role for ${name}`);
+        message.guild.createRole({
+            name: name,
+            color: 'BLACK',
+        }).catch(O_o=>{});
+      }
+      // Color and assign role
+      setTimeout(() => {
+        let role = message.guild.roles.find(roleVal => roleVal.name === name);
+        role.edit({
+          color: colours[cnames.indexOf(args[0])]
+        });
+        return message.member.addRole(role);
+      }, 2000);
+      if(!role) return;
+      role.edit({
+        color: colours[cnames.indexOf(args[0])]
+      })
+    } else {
+      return message.channel.send("Color doesn't exist @Mich and get him to add it");
+    }
+  }
+
+  if(command === "colours" || command === "colors") {
+    var colours = ['#00FFFF', '#0000FF', '#AA00AA', '#FF0000', '#FF69B4', '#FFDF00', '#FFA500', '#FFA500', '#DCDCDC', '#010101', '#FFFFFF', '#2C2F33'];
+    var cnames = ['cyan', 'blue', 'purple', 'red', 'pink', 'yellow', 'gold', 'orange', 'grey', 'black', 'white', 'invisible'];
+    var output = ""
+    console.log(cnames.length);
+    var embed;
+    for(var i = 0; i < cnames.length; i++) {
+      output = output + "\n" + cnames[i] + " = " + colours[i]
+      embed = new Discord.RichEmbed({
+        "title": "Available Role Colours",
+        "description": output,
+        "color": 0xFFFF
+      });
+    }
+    return message.channel.send({embed}).catch(O_o=>{});      
+  }
+
   if(command === "write") {
     const write = args[0];
     if(write.length > 10) {
@@ -222,21 +301,22 @@ client.on("message", async message => {
           return console.log(err);
         }
       console.log("The file was saved!");
-      message.channel.send("Updated your record");
+      return message.channel.send("Updated your record");
       });
     }
   }
+
   if(command === "read")  {
     fs.readFile(`/glob/${message.author.id}.st`, "UTF8", function(err, data) {
       if(err) {
         return err;
       }
       const content = data;
-      message.channel.send(`<@${message.author.id}> "${content}"`);
+      return message.channel.send(`<@${message.author.id}> "${content}"`);
     });
   }
 
-  if(command.startsWith("re")) {
+  if(command.startsWith("re") && command != "read") {
     const players = spawn("/glob/bin/dsr.sh");
     players.stdout.on("data", function(data) {
     title = "Online DSR Players" + "!".repeat(command.length - 2)
@@ -262,6 +342,27 @@ client.on("message", async message => {
     });
   }
 
+  if(command.startsWith("song")) {
+    console.log("in song");
+    exec('bash /glob/bin/scrape_spotify.sh', function callback(error, stdout, stderr){
+      console.log("ok" + stdout);
+    });
+    setTimeout(function() {
+      fs.readFile(`/glob/song`, "UTF8", function(err, data) {
+        if(err) {
+          return err;
+        }
+        const content = data;
+        let embed = new Discord.RichEmbed({
+          "title": "Listening to:",
+          "description": `${content}`,
+          "color": 0xFFFF
+        });
+        message.channel.send({embed}).catch(O_o=>{});
+      });
+    }, 1000);
+  }
+
   if(command === "playing") {
     let memberWithRole = message.guild.members.filter(member => {
       return member.roles.find(role => role.name === "Playing");
@@ -273,7 +374,7 @@ client.on("message", async message => {
         "title": "There are no active DSR players in this server",
         "color": 0xFFFF
       });
-      return message.channel.send({embed});
+      message.channel.send({embed});
     } else if(memberWithRole.length === 1) {
       var description = `${memberWithRole.length} DSR Player (Discord)`;
     } else {
@@ -284,15 +385,17 @@ client.on("message", async message => {
       "description": memberWithRole.join("\n"),
       "color": 0xFFFF
     });
-    var players = spawn("/glob/bin/scrape_steam.sh");
-    players.stdout.on("data", function(data) {
-      title = "Online DSR Players (Steam)"
+    exec('bash /glob/bin/scrape_steam.sh', function callback(error, stdout, stderr) {
+      title = "Online DSR Players (Steam)";
+      console.log("output = " + stdout);
       let embed = new Discord.RichEmbed({
         "title": title,
-        "description": `${data.toString()}`,
+        "description": `${stdout}`,
         "color": 0xFFFF
       });
-      return message.channel.send({embed}).catch(O_o=>{});
+      if(stdout != "" || stdout != "\n") {
+        return message.channel.send({embed}).catch(O_o=>{});
+      }
     });
     return message.channel.send({embed}); 
   }
@@ -326,71 +429,8 @@ client.on("message", async message => {
   if(command === "status") {
     message.channel.send("Not yet implemented");
   }
-
-  if(command === "kick") {
-    // This command must be limited to mods and admins. In this example we just hardcode the role names.
-    // Please read on Array.some() to understand this bit: 
-    // https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Array/some?
-    if(!message.member.roles.some(r=>["Administrator", "Moderator"].includes(r.name)) )
-      return message.reply("Sorry, you don't have permissions to use this!");
-    
-    // Let's first check if we have a member and if we can kick them!
-    // message.mentions.members is a collection of people that have been mentioned, as GuildMembers.
-    // We can also support getting the member by ID, which would be args[0]
-    let member = message.mentions.members.first() || message.guild.members.get(args[0]);
-    if(!member)
-      return message.reply("Please mention a valid member of this server");
-    if(!member.kickable) 
-      return message.reply("I cannot kick this user! Do they have a higher role? Do I have kick permissions?");
-    
-    // slice(1) removes the first part, which here should be the user mention or ID
-    // join(' ') takes all the various parts to make it a single string.
-    let reason = args.slice(1).join(' ');
-    if(!reason) reason = "No reason provided";
-    
-    // Now, time for a swift kick in the nuts!
-    await member.kick(reason)
-      .catch(error => message.reply(`Sorry ${message.author} I couldn't kick because of : ${error}`));
-    message.reply(`${member.user.tag} has been kicked by ${message.author.tag} because: ${reason}`);
-
-  }
-  
-  if(command === "ban") {
-    // Most of this command is identical to kick, except that here we'll only let admins do it.
-    // In the real world mods could ban too, but this is just an example, right? ;)
-    if(!message.member.roles.some(r=>["Administrator"].includes(r.name)) )
-      return message.reply("Sorry, you don't have permissions to use this!");
-    
-    let member = message.mentions.members.first();
-    if(!member)
-      return message.reply("Please mention a valid member of this server");
-    if(!member.bannable) 
-      return message.reply("I cannot ban this user! Do they have a higher role? Do I have ban permissions?");
-
-    let reason = args.slice(1).join(' ');
-    if(!reason) reason = "No reason provided";
-    
-    await member.ban(reason)
-      .catch(error => message.reply(`Sorry ${message.author} I couldn't ban because of : ${error}`));
-    message.reply(`${member.user.tag} has been banned by ${message.author.tag} because: ${reason}`);
-  }
-  
-  if(command === "purge") {
-    // This command removes all messages from all users in the channel, up to 100.
-    
-    // get the delete count, as an actual number.
-    const deleteCount = parseInt(args[0], 10);
-    
-    // Ooooh nice, combined conditions. <3
-    if(!deleteCount || deleteCount < 2 || deleteCount > 100)
-      return message.reply("Please provide a number between 2 and 100 for the number of messages to delete");
-    
-    // So we get our messages, and delete them. Simple enough, right?
-    const fetched = await message.channel.fetchMessages({limit: deleteCount});
-    message.channel.bulkDelete(fetched)
-      .catch(error => message.reply(`Couldn't delete messages because of: ${error}`));
-  }
   */
-});
+
+ });
 
 client.login(config.token);
