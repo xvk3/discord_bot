@@ -114,7 +114,7 @@ client.on("message", async message => {
      message.content.includes("koksma") || 
      message.content.includes("KOKSMA")
   ) {
-    message.react("❤️").catch(O_o=>{});
+    message.react("💝").catch(O_o=>{});
   }
   if( // React to "Mac"
      message.content.includes("Mac") ||
@@ -123,11 +123,40 @@ client.on("message", async message => {
   ) {
     message.react("💖").catch(O_o=>{});
   }
+  if( // React to "CADERBOT4000"
+     message.content.includes("Cader") ||
+     message.content.includes("cader") ||
+     message.content.includes("CADER") ||
+     message.content.includes("CaderBot4000") ||
+     message.content.includes("caderbot4000") ||
+     message.content.includes("CADERBOT4000") ||
+     message.content.includes("CB4k") ||
+     message.content.includes("CB4K")
+  ) {
+    message.react("🤖").catch(O_o=>{});
+  }
+  if( // React to "Sitri"
+    message.content.includes("Sitri") ||
+    message.content.includes("sitri") ||
+    message.content.includes("SITRI") ||
+    message.content.includes("S i t r i") ||
+    message.content.includes("s i t r i") ||
+    message.content.includes("S I T R I")
+  ) {
+    message.react("💜").catch(O_o=>{});
+  }
+  if( // React to "mmdks.com"
+    message.content.includes("mmdks.com") ||
+    message.content.includes("MMDKS.com") ||
+    message.content.includes("MMDKS.COM") ||
+    message.content.includes("mmdks.COM")
+  ) {
+    message.react("😻").catch(O_o=>{});
+  }
 
   if(message.content.startsWith("!")) {
     return message.channel.send(`<@${message.author.id}> Bot commands start with '+'`);
   }
-
   if(message.content.indexOf(config.prefix) !== 0) {
     return;
   }
