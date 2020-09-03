@@ -30,9 +30,14 @@ client.on("ready", () => {
       const playingRole = guild.roles.find(role => role.name === "Playing");
        
       const game = member.presence.game;
-
       if(game) {
-        if (game.applicationID === "449738622619353088") {
+        console.log(`${game.name} by ${member.user.tag}`);
+        console.log(`${game.applicationID}`);
+      } else {
+        console.log(`null ativity by ${member.user.tag}`);
+      }
+      if(game) {
+        if (game.applicationID === "449738622619353088" || game.name === "DARK SOULS™: REMASTERED") {
           member.addRole(playingRole).then(() => console.log(`${playingRole.name} added to ${newMember.user.tag}.`)).catch(O_o=>{});
         } else {
           member.removeRole(playingRole).then(() => console.log(`${playingRole.name} removed from ${newMember.user.tag}.`)).catch(O_o=>{});
@@ -70,7 +75,7 @@ client.on('presenceUpdate', (oldMember, newMember) => {
 
   console.log(`${newMember.user.tag} is playing ${game}`);
 
-  if (!oldGame && newGame && game.applicationID === "449738622619353088") {
+  if (newGame && game.applicationID === "449738622619353088") {
     newMember.addRole(playingRole).then(() => console.log(`${playingRole.name} added to ${newMember.user.tag}.`)).catch(O_o=>{});
   } else {
     newMember.removeRole(playingRole).then(() => console.log(`${playingRole.name} removed from ${newMember.user.tag}.`)).catch(O_o=>{});
@@ -145,6 +150,16 @@ client.on("message", async message => {
   ) {
     message.react("💜").catch(O_o=>{});
   }
+  if( // React to "Beatrice"
+    message.content.includes("Bea") ||
+    message.content.includes("bea") ||
+    message.content.includes("BEA") ||
+    message.content.includes("Beatrice") ||
+    message.content.includes("beatrice") ||
+    message.content.includes("BEATRICE")
+  ) {
+    message.react("💜").catch(O_o=>{});
+  }
   if( // React to "mmdks.com"
     message.content.includes("mmdks.com") ||
     message.content.includes("MMDKS.com") ||
@@ -197,6 +212,10 @@ client.on("message", async message => {
         "value": "Provides a link to some DSR tips"
       },
       {
+        "name": "+souls",
+        "value": "Provides a link to a table of souls required to level up and souls acquired from PvP activities"
+      },
+      {
         "name": "+say [something]",
         "value": "Prints something"
       },
@@ -218,11 +237,11 @@ client.on("message", async message => {
       },
       {
         "name": "+write",
-        "value": "Remeber up to 10 characters"
+        "value": "Remember up to 10 characters"
       },
       {
         "name": "+read",
-        "value": "Return the remebered text"
+        "value": "Return the remembered text"
       }
     ],
     "color": 0xFFFF
@@ -274,8 +293,8 @@ client.on("message", async message => {
   */
 
   if(command === "colour" || command === "color") {
-    var colours = ['#00FFFF', '#0000FF', '#AA00AA', '#FF0000', '#FF69B4', '#FFDF00', '#FFA500', '#FFA500', '#DCDCDC', '#010101', '#FFFFFF', '#2C2F33'];
-    var cnames  = ['cyan', 'blue', 'purple', 'red', 'pink', 'yellow', 'gold', 'orange', 'grey', 'black', 'white', 'invisible'];
+    var colours = ['#00FFFF', '#0000FF', '#AA00AA', '#FF0000', '#FF69B4', '#FFDF00', '#FFA500', '#FFA500', '#DCDCDC', '#010101', '#FFFFFF', '#2C2F33', '#D211BC', '#FF0043'];
+    var cnames  = ['cyan', 'blue', 'purple', 'red', 'pink', 'yellow', 'gold', 'orange', 'grey', 'black', 'white', 'invisible', 'sitri_pink', 'k0k_pink'];
     if(cnames.indexOf(args[0]) >= 0)  {
       var name = message.author.tag;
       var role = message.guild.roles.find(roleVal => roleVal.name === name);
@@ -304,8 +323,8 @@ client.on("message", async message => {
   }
 
   if(command === "colours" || command === "colors") {
-    var colours = ['#00FFFF', '#0000FF', '#AA00AA', '#FF0000', '#FF69B4', '#FFDF00', '#FFA500', '#FFA500', '#DCDCDC', '#010101', '#FFFFFF', '#2C2F33'];
-    var cnames = ['cyan', 'blue', 'purple', 'red', 'pink', 'yellow', 'gold', 'orange', 'grey', 'black', 'white', 'invisible'];
+    var colours = ['#00FFFF', '#0000FF', '#AA00AA', '#FF0000', '#FF69B4', '#FFDF00', '#FFA500', '#FFA500', '#DCDCDC', '#010101', '#FFFFFF', '#2C2F33', '#D211BC', '#FF0043'];
+    var cnames = ['cyan', 'blue', 'purple', 'red', 'pink', 'yellow', 'gold', 'orange', 'grey', 'black', 'white', 'invisible', 'sitri_pink', 'k0k_pink'];
     var output = ""
     console.log(cnames.length);
     var embed;
@@ -398,25 +417,18 @@ client.on("message", async message => {
     }).map(member => {
       return member.user.username;
     })
-    if(memberWithRole.length === 0) {
-      let embed = new Discord.RichEmbed({
-        "title": "There are no active DSR players in this server",
-        "color": 0xFFFF
-      });
-      message.channel.send({embed});
-    } else if(memberWithRole.length === 1) {
+    if(memberWithRole.length === 1) {
       var description = `${memberWithRole.length} DSR Player (Discord)`;
     } else {
       var description = `${memberWithRole.length} DSR Players (Discord)`;
     }
-    let embed = new Discord.RichEmbed({
+    var embed = new Discord.RichEmbed({
       "title": description,
       "description": memberWithRole.join("\n"),
       "color": 0xFFFF
     });
     exec('bash /glob/bin/scrape_steam.sh', function callback(error, stdout, stderr) {
       title = "Online DSR Players (Steam)";
-      console.log("output = " + stdout);
       let embed = new Discord.RichEmbed({
         "title": title,
         "description": `${stdout}`,
@@ -452,6 +464,10 @@ client.on("message", async message => {
 
   if(command === "tips") {
     return message.channel.send("http://www.xvk3.net/dsr/tips.html");
+  }
+
+  if(command === "souls") {
+    return message.channel.send("http://www.xvk3.net/souls.html");
   }
 
   /*
