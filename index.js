@@ -5,6 +5,7 @@ const fs = require('fs');
 const emoji = require('node-emoji');
 const spawn = require('child_process').spawn
 const exec  = require('child_process').exec
+const schedule = require('node-schedule');
 // Load config.json - contains bot token and prefix value
 const config = require("./config.json");
 // config.token contains the bot's token
@@ -22,6 +23,29 @@ client.on("ready", () => {
   // Server
   var list = client.guilds.get("740902433491779614");
 
+  // GHU
+  var j = schedule.scheduleJob('0 0 * * 1', function(){
+    const channel = client.channels.find(channel => channel.name === "ghu-lottery");
+    role = list.roles.find(role => role.name === "GHU");
+    return channel.send(`<@&${role.id}> Time for registration: http://www.xvk3.net/register.php`).catch(O_o=>{});
+  });
+  var j = schedule.scheduleJob('0 0 * * 3', function(){
+    const channel = client.channels.find(channel => channel.name === "ghu-lottery");
+    role = list.roles.find(role => role.name === "GHU");
+    return channel.send(`<@&${role.id}> Time to sumbit your number: http://www.xvk3.net/guess.php`).catch(O_o=>{});
+  });
+  var l = schedule.scheduleJob('0 0 * * 5', function(){
+    const channel = client.channels.find(channel => channel.name === "ghu-lottery");
+    role = list.roles.find(role => role.name === "GHU");
+    return channel.send(`<@&${role.id}> Results are in: http://www.xvk3.net/results.php`).catch(O_o=>{});
+  });
+
+  // Tick
+  var t = schedule.scheduleJob('00 * * * *', function(){
+    const channel = client.channels.find(channel => channel.name === "testing");
+    return channel.send(`Alive`).catch(O_o=>{});
+  });
+
   // TODO Loop over members for presence & game activity checks
   setInterval(function(){
 
@@ -36,6 +60,7 @@ client.on("ready", () => {
       } else {
         console.log(`null ativity by ${member.user.tag}`);
       }
+      // TODO I feel like this function can be done better
       if(game) {
         if (game.applicationID === "449738622619353088" || game.name === "DARK SOULS™: REMASTERED") {
           member.addRole(playingRole).then(() => console.log(`${playingRole.name} added to ${newMember.user.tag}.`)).catch(O_o=>{});
@@ -60,10 +85,10 @@ client.on("guildDelete", guild => {
   client.user.setActivity(`Serving ${client.guilds.size} servers`);
 });
 
-/*client.on("guildMemberAdd", (guild, member) => {
+client.on("guildMemberAdd", (guild, member) => {
   // This event triggers when a new member joins a guild
-
-});*/
+  
+});
 
 client.on('presenceUpdate', (oldMember, newMember) => {
   const guild = newMember.guild;
@@ -96,7 +121,7 @@ client.on("message", async message => {
       return message.react("\u2753").catch(O_o=>{});
     }
   }
-
+  // TODO make this read the matches and emoji from a file instead
   if( // React to "uwu" and "owo"
      message.content.includes("uwu") || 
      message.content.includes("owo")
@@ -172,10 +197,11 @@ client.on("message", async message => {
   if(message.content.startsWith("!")) {
     return message.channel.send(`<@${message.author.id}> Bot commands start with '+'`);
   }
+
+  // Parse commands
   if(message.content.indexOf(config.prefix) !== 0) {
     return;
   }
-
   const args = message.content.slice(config.prefix.length).trim().split(/ +/g);
   const command = args.shift().toLowerCase();
 
@@ -192,13 +218,17 @@ client.on("message", async message => {
         "value": "Prints the number of PTDE players"
       },
       {
-        "name": "+re",
+        "name": "+re / +dsr",
         "value": "Prints the number of DSR players"
       },
       {
         "name": "+playing",
         "value": "Prints the number of DSR players active in this server and on my Steam friends list"
       },
+      {
+        "name": "+ptdeing",
+        "value": "Prints the number of PTDE players on my Steam friends list"
+      }, 
       {
         "name": "+cheats",
         "value": "Provdes a link to download Cheat Engine, Gadget and CE scripts"
@@ -236,12 +266,20 @@ client.on("message", async message => {
         "value": "Prints the available colours for use with the +colour command"
       },
       {
+        "name": "+temp",
+        "value": "Get Siegmeyer's temperature (°C)"
+      },
+      {
         "name": "+write",
-        "value": "Remember up to 10 characters"
+        "value": "Remember up to 256 characters"
       },
       {
         "name": "+read",
         "value": "Return the remembered text"
+      },
+      {
+        "name": "+ghu [add]",
+        "value": "Assign yourself the GHU role to be mentioned by Siegmeyer when the GHU lottery period changes"
       }
     ],
     "color": 0xFFFF
@@ -252,45 +290,41 @@ client.on("message", async message => {
 
   // Start of command parsing
   if(command === "say") {
-    // makes the bot say something and delete the message. As an example, it's open to anyone to use.
-    // To get the "message" itself we join the `args` back into a string with spaces:
     const sayMessage = args.join(" ");
 
     if(message.member.roles.some(r=>["Mod"].includes(r.name)) ) {
       message.delete().catch(O_o=>{});
     }
-
-    // And we get the bot to say the thing: 
     message.channel.send(sayMessage);
   }
 
-  /*
-  if(command === "uwu")	{
-    const e = emoji.get("heart");
-    message.channel.send(`<@${message.author.id}> ${e}`);
-    console.log(command);
-  }
+  if(command === "ghu" || command === "GHU") {
+    if(args[0] === "time") {
+      // Run bash program to curl GHU PHP info
+      console.log("time");
 
-  // This is currently bugged
-  // Get warnings regarding promises.
-  
-  if(command === "react") {
-    if(emoji.hasEmoji(args[0])) {
-      const e = emoji.get(args[0]);
-      console.log(e);
-      message.delete().catch(O_o=>{});
-      message.channel.fetchMessages({limit: 1})
-        .then(function(msgCollection) {
-          msgCollection.forEach(function(msg) {
-            msg.react(e).catch(O_o=>{});
-        }).catch(O_o=>{});
-      });
+    } else if(args[0] === "status") {
+      // Superseeds "time" ???
+      return message.react("").catch(O_o=>{});
+
+    } else if(args[0] === "del") {
+      let role = message.guild.roles.find(roleVal => roleVal.name === "GHU");
+      if(role)  {
+        message.member.removeRole(role).catch(O_o=>{});
+        return message.channel.send("Removed GHU role");
+      }  
+
+    } else if(args[0] === "add") {
+      let role = message.guild.roles.find(roleVal => roleVal.name === "GHU");
+      if(role)  {
+        message.member.addRole(role).catch(O_o=>{});
+        return message.channel.send("Added GHU role");
+      }
+
     } else {
-      message.channel.send("unknown emoji");
-      console.log("unknown emoji");
+      return message.channel.send("Unknow +ghu command");
     }
   }
-  */
 
   if(command === "colour" || command === "color") {
     var colours = ['#00FFFF', '#0000FF', '#AA00AA', '#FF0000', '#FF69B4', '#FFDF00', '#FFA500', '#FFA500', '#DCDCDC', '#010101', '#FFFFFF', '#2C2F33', '#D211BC', '#FF0043'];
@@ -340,9 +374,9 @@ client.on("message", async message => {
   }
 
   if(command === "write") {
-    const write = args[0];
-    if(write.length > 10) {
-      message.channel.send(`<@${message.author.id}> No data longer than 10 characters!`);
+    const write = args.join(" ");
+    if(write.length > 256) {
+      message.channel.send(`<@${message.author.id}> No data longer than 256 characters!`);
     } else {
       fs.writeFile(`/glob/${message.author.id}.st`, write, function(err) {
         if(err) {
@@ -364,30 +398,58 @@ client.on("message", async message => {
     });
   }
 
-  if(command.startsWith("re") && command != "read") {
+  if(command === "re" || command === "dsr") {
     const players = spawn("/glob/bin/dsr.sh");
     players.stdout.on("data", function(data) {
-    title = "Online DSR Players" + "!".repeat(command.length - 2)
       let embed = new Discord.RichEmbed({
-        "title": title,
+        "title": "Online DSR Players",
         "description": `${data.toString()}`,
+        "color": 0xFFFF
+      });
+      return message.channel.send({embed}).catch(O_o=>{});
+    });
+    const trend = spawn("/glob/bin/tdsr.sh");
+    trend.stdout.on("data", function(data) {
+      let embed = new Discord.RichEmbed({
+        "title": "DSR Players (24 Hours)",
+        "description": `\`\`\`\n${data.toString()}\`\`\``,
         "color": 0xFFFF
       });
       return message.channel.send({embed}).catch(O_o=>{});
     });
   }
 
-  if(command.startsWith("ptde")) {
+  if(command === "temp") {
+    const temp = spawn("/glob/bin/ttemp.sh");
+    temp.stdout.on("data", function(data) {
+      let embed = new Discord.RichEmbed({
+        "title": "Siegmeyer's Temperature (24 Hours)",
+        "description": `\`\`\`${data.toString()}\`\`\``,
+        "color": 0xFFFF
+      });
+      return message.channel.send({embed}).catch(O_o=>{});
+    });
+  }
+
+  if(command === "ptde" || command === "ds1") {
     const players = spawn("/glob/bin/ptde.sh");
     players.stdout.on("data", function(data) {
-    title = "Online PTDE Players" + "!".repeat(command.length - 2)
       let embed = new Discord.RichEmbed({
-        "title": title,
+        "title": "Onine PTDE Players",
         "description": `${data.toString()}`,
         "color": 0xFFFF
       });
       return message.channel.send({embed}).catch(O_o=>{});
     });
+    const trend = spawn("/glob/bin/tptde.sh");
+    trend.stdout.on("data", function(data) {
+      let embed = new Discord.RichEmbed({
+        "title": "PTDE Players (24 Hours)",
+        "description": `\`\`\`${data.toString()}\`\`\``,
+        "color": 0xFFFF
+      });
+      return message.channel.send({embed}).catch(O_o=>{});
+    }); 
   }
 
   if(command.startsWith("song")) {
@@ -409,6 +471,20 @@ client.on("message", async message => {
         message.channel.send({embed}).catch(O_o=>{});
       });
     }, 1000);
+  }
+
+  if(command === "ptdeing") {
+    exec('bash /glob/bin/scrape_steam_ptde.sh', function callback(error, stdout, stderr) {
+      title = "Online PTDE Players (Steam)";
+      let embed = new Discord.RichEmbed({
+        "title": title,
+        "description": `${stdout}`,
+        "color": 0xFFFF
+      });
+      if(stdout != "" || stdout != "\n") {
+        return message.channel.send({embed}).catch(O_o=>{});
+      }
+    });
   }
 
   if(command === "playing") {
@@ -470,12 +546,6 @@ client.on("message", async message => {
     return message.channel.send("http://www.xvk3.net/souls.html");
   }
 
-  /*
-  if(command === "status") {
-    message.channel.send("Not yet implemented");
-  }
-  */
-
- });
+});
 
 client.login(config.token);
