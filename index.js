@@ -214,12 +214,16 @@ client.on("message", async message => {
         "value": "Prints this message"
       },
       {
-        "name": "+ptde",
-        "value": "Prints the number of PTDE players"
+        "name": "+ptde [hours (max 168)]",
+        "value": "Prints a trend and the number of PTDE players"
       },
       {
-        "name": "+re / +dsr",
-        "value": "Prints the number of DSR players"
+        "name": "+re / +dsr [hours (max 168)]",
+        "value": "Prints a trend and the number of DSR players"
+      },
+      {
+        "name": "+koa / +koarr",
+        "value": "Prints the number of Kingdoms of Amalur: Re-Reckoning players"
       },
       {
         "name": "+playing",
@@ -399,6 +403,10 @@ client.on("message", async message => {
   }
 
   if(command === "re" || command === "dsr") {
+    var duration = "24";
+    if(args[0] != "" && !isNaN(args[0]) && args[0] != "0") {
+      duration = args[0];
+    }
     const players = spawn("/glob/bin/dsr.sh");
     players.stdout.on("data", function(data) {
       let embed = new Discord.RichEmbed({
@@ -408,11 +416,10 @@ client.on("message", async message => {
       });
       return message.channel.send({embed}).catch(O_o=>{});
     });
-    const trend = spawn("/glob/bin/tdsr.sh");
-    trend.stdout.on("data", function(data) {
+    exec(`bash /glob/bin/tdsr.sh ${duration}`, function callback(error, stdout, stderr) {
       let embed = new Discord.RichEmbed({
-        "title": "DSR Players (24 Hours)",
-        "description": `\`\`\`\n${data.toString()}\`\`\``,
+        "title": `DSR Players (${duration} Hours)`,
+        "description": `\`\`\`\n${stdout.toString()}\`\`\``,
         "color": 0xFFFF
       });
       return message.channel.send({embed}).catch(O_o=>{});
@@ -432,6 +439,10 @@ client.on("message", async message => {
   }
 
   if(command === "ptde" || command === "ds1") {
+    var duration = "24";
+    if(args[0] != "" && !isNaN(args[0]) && args[0] != "0") {
+      duration = args[0];
+    }
     const players = spawn("/glob/bin/ptde.sh");
     players.stdout.on("data", function(data) {
       let embed = new Discord.RichEmbed({
@@ -441,15 +452,27 @@ client.on("message", async message => {
       });
       return message.channel.send({embed}).catch(O_o=>{});
     });
-    const trend = spawn("/glob/bin/tptde.sh");
-    trend.stdout.on("data", function(data) {
+    exec(`bash /glob/bin/tptde.sh ${duration}`, function callback(error, stdout, stderr) {
       let embed = new Discord.RichEmbed({
-        "title": "PTDE Players (24 Hours)",
-        "description": `\`\`\`${data.toString()}\`\`\``,
+        "title": `PTDE Players (${duration} Hours)`,
+        "description": `\`\`\`\n${stdout.toString()}\`\`\``,
         "color": 0xFFFF
       });
       return message.channel.send({embed}).catch(O_o=>{});
-    }); 
+    });
+  }
+
+  if(command === "koa" || command === "koarr")  {
+    const players = spawn("/glob/bin/koarr.sh");
+    players.stdout.on("data", function(data) {
+      let embed = new Discord.RichEmbed({
+        "title": "Online KOA:RR Players",
+        "description": `${data.toString()}`,
+        "color": 0xFFFF
+      });
+      return message.channel.send({embed}).catch(O_o=>{});
+    });
+    return;
   }
 
   if(command.startsWith("song")) {
