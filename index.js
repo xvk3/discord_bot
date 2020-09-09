@@ -32,7 +32,7 @@ client.on("ready", () => {
   var j = schedule.scheduleJob('0 0 * * 3', function(){
     const channel = client.channels.find(channel => channel.name === "ghu-lottery");
     role = list.roles.find(role => role.name === "GHU");
-    return channel.send(`<@&${role.id}> Time to sumbit your number: http://www.xvk3.net/guess.php`).catch(O_o=>{});
+    return channel.send(`<@&${role.id}> Time to sumbit your number: http://www.xvk3.net/countdown.php`).catch(O_o=>{});
   });
   var l = schedule.scheduleJob('0 0 * * 5', function(){
     const channel = client.channels.find(channel => channel.name === "ghu-lottery");
