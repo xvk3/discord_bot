@@ -111,7 +111,7 @@ client.on("message", async message => {
   // This event will run on every single message received, from any channel or DM.
 
   // Ignore messages from other bots
-  if(message.author.bot) return;
+  //if(message.author.bot) return;
 
   // React to messages @ing the bot
   if(message.mentions.members.size !== 0)	{
@@ -176,9 +176,9 @@ client.on("message", async message => {
     message.react("💜").catch(O_o=>{});
   }
   if( // React to "Beatrice"
-    message.content.includes("Bea") ||
-    message.content.includes("bea") ||
-    message.content.includes("BEA") ||
+    message.content.includes("Bea ") ||
+    message.content.includes("bea ") ||
+    message.content.includes("BEA ") ||
     message.content.includes("Beatrice") ||
     message.content.includes("beatrice") ||
     message.content.includes("BEATRICE")
@@ -235,7 +235,7 @@ client.on("message", async message => {
       }, 
       {
         "name": "+cheats",
-        "value": "Provdes a link to download Cheat Engine, Gadget and CE scripts"
+        "value": "Provides a link to download Cheat Engine, Gadget and CE scripts"
       },
       {
         "name": "+poise",
@@ -248,6 +248,10 @@ client.on("message", async message => {
       {
         "name": "+souls",
         "value": "Provides a link to a table of souls required to level up and souls acquired from PvP activities"
+      },
+      {
+        "name": "+tech",
+        "value": "Provides a link to a Dark Souls 1 PvP Glossary and PvP tech YouTube playlists"
       },
       {
         "name": "+say [something]",
@@ -295,11 +299,8 @@ client.on("message", async message => {
   // Start of command parsing
   if(command === "say") {
     const sayMessage = args.join(" ");
-
-    if(message.member.roles.some(r=>["Mod"].includes(r.name)) ) {
-      message.delete().catch(O_o=>{});
-    }
-    message.channel.send(sayMessage);
+    message.delete().catch(O_o=>{});
+    return message.channel.send(sayMessage).catch(O_o=>{});
   }
 
   if(command === "ghu" || command === "GHU") {
@@ -416,9 +417,9 @@ client.on("message", async message => {
       });
       return message.channel.send({embed}).catch(O_o=>{});
     });
-    exec(`bash /glob/bin/tdsr.sh ${duration}`, function callback(error, stdout, stderr) {
+    exec(`bash /glob/bin/tdsr.sh 24`, function callback(error, stdout, stderr) {
       let embed = new Discord.RichEmbed({
-        "title": `DSR Players (${duration} Hours)`,
+        "title": `DSR Players (24 Hours)`,
         "description": `\`\`\`\n${stdout.toString()}\`\`\``,
         "color": 0xFFFF
       });
@@ -440,7 +441,7 @@ client.on("message", async message => {
 
   if(command === "ptde" || command === "ds1") {
     var duration = "24";
-    if(args[0] != "" && !isNaN(args[0]) && args[0] != "0") {
+    if(args[0] != "" && !isNaN(args[0]) && args[0] != "0" && args[0] != undefined) {
       duration = args[0];
     }
     const players = spawn("/glob/bin/ptde.sh");
@@ -452,9 +453,9 @@ client.on("message", async message => {
       });
       return message.channel.send({embed}).catch(O_o=>{});
     });
-    exec(`bash /glob/bin/tptde.sh ${duration}`, function callback(error, stdout, stderr) {
+    exec(`bash /glob/bin/tptde.sh 24`, function callback(error, stdout, stderr) {
       let embed = new Discord.RichEmbed({
-        "title": `PTDE Players (${duration} Hours)`,
+        "title": `PTDE Players (24 Hours)`,
         "description": `\`\`\`\n${stdout.toString()}\`\`\``,
         "color": 0xFFFF
       });
@@ -463,6 +464,10 @@ client.on("message", async message => {
   }
 
   if(command === "koa" || command === "koarr")  {
+    var duration = "24";
+    if(args[0] != "" && !isNaN(args[0]) && args[0] != "0" && args[0] != undefined) {
+      duration = args[0];
+    }
     const players = spawn("/glob/bin/koarr.sh");
     players.stdout.on("data", function(data) {
       let embed = new Discord.RichEmbed({
@@ -472,7 +477,14 @@ client.on("message", async message => {
       });
       return message.channel.send({embed}).catch(O_o=>{});
     });
-    return;
+    exec(`bash /glob/bin/tkoarr.sh 24`, function callback(error, stdout, stderr) {
+      let embed = new Discord.RichEmbed({
+        "title": `KOA:RR Players (${duration}) Hours)`,
+        "description": `\`\`\`\n${stdout.toString()}\`\`\``,
+        "color": 0xFFFF
+      });
+      return message.channel.send({embed}).catch(O_o=>{});
+    });
   }
 
   if(command.startsWith("song")) {
@@ -545,8 +557,23 @@ client.on("message", async message => {
     return 1;
   }
 
+  if(command === "tech") {
+    message.channel.send("https://docs.google.com/document/d/1Pk9zUUWBCOo65KyfVM-vClDU390SzmKfZqLWRUjtf5o");
+    message.channel.send("ds pvp tec - bob bob https://www.youtube.com/playlist?list=PLUI-OAki-Yxe17OcRW7xdOi4cSD3AVloZ");
+    message.channel.send("Dark Souls PvP Guides - Cestial https://www.youtube.com/playlist?list=PLwvNUIk9YHJ6Vn8DDM8SQu2fvgSDOcSH-");
+    return 1;
+  }
+
   if(command === "joke") {
-    return message.channel.send("Seneka08").then(sentMsg => { 
+    num = Math.floor(Math.random() * Math.floor(50));
+    switch(num) {
+      case 12:
+        joke = "TheMain";
+        break;
+      default:
+        joke = "Seneka08";
+    }
+    return message.channel.send(joke).then(sentMsg => { 
       sentMsg.react("😂").catch(O_o=>{});
       sentMsg.react("🤣").catch(O_o=>{});
       sentMsg.react("😆").catch(O_o=>{});
