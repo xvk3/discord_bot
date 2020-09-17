@@ -111,7 +111,13 @@ client.on("message", async message => {
   // This event will run on every single message received, from any channel or DM.
 
   // Ignore messages from other bots
-  //if(message.author.bot) return;
+  if(message.author.bot) return;
+
+  if(message.channel.id == 756029986011611196)  {
+    msg = message.content;
+    message.delete().catch(O_o=>{});
+    return message.channel.send(msg).catch(O_o=>{});
+  }
 
   // React to messages @ing the bot
   if(message.mentions.members.size !== 0)	{
@@ -137,9 +143,9 @@ client.on("message", async message => {
     message.react("💚").catch(O_o=>{});
   }
   if( // React to "KOKSMA"
-     message.content.includes("Kok") ||
-     message.content.includes("kok") ||
-     message.content.includes("KOK") ||
+     message.content.includes("Kok ") ||
+     message.content.includes("kok ") ||
+     message.content.includes("KOK ") ||
      message.content.includes("Koksma") ||
      message.content.includes("koksma") || 
      message.content.includes("KOKSMA")
@@ -147,9 +153,9 @@ client.on("message", async message => {
     message.react("💝").catch(O_o=>{});
   }
   if( // React to "Mac"
-     message.content.includes("Mac") ||
-     message.content.includes("mac") ||
-     message.content.includes("MAC")
+     message.content.includes("Mac ") ||
+     message.content.includes("mac ") ||
+     message.content.includes("MAC ")
   ) {
     message.react("💖").catch(O_o=>{});
   }
@@ -405,7 +411,7 @@ client.on("message", async message => {
 
   if(command === "re" || command === "dsr") {
     var duration = "24";
-    if(args[0] != "" && !isNaN(args[0]) && args[0] != "0") {
+    if(args[0] != "" && !isNaN(args[0]) && args[0] != "0" && args[0] != undefined) {
       duration = args[0];
     }
     const players = spawn("/glob/bin/dsr.sh");
@@ -417,9 +423,9 @@ client.on("message", async message => {
       });
       return message.channel.send({embed}).catch(O_o=>{});
     });
-    exec(`bash /glob/bin/tdsr.sh 24`, function callback(error, stdout, stderr) {
+    exec(`bash /glob/bin/tdsr.sh ${duration}`, function callback(error, stdout, stderr) {
       let embed = new Discord.RichEmbed({
-        "title": `DSR Players (24 Hours)`,
+        "title": `DSR Players (${duration} Hours)`,
         "description": `\`\`\`\n${stdout.toString()}\`\`\``,
         "color": 0xFFFF
       });
@@ -428,10 +434,13 @@ client.on("message", async message => {
   }
 
   if(command === "temp") {
-    const temp = spawn("/glob/bin/ttemp.sh");
-    temp.stdout.on("data", function(data) {
+    var duration = "24";
+    if(args[0] != "" && !isNaN(args[0]) && args[0] != "0" && args[0] != undefined)  {
+      duration = args[0];
+    }
+    exec(`bash /glob/bin/ttemp.sh ${duration}`, function callback(error, stdout, stderr) {
       let embed = new Discord.RichEmbed({
-        "title": "Siegmeyer's Temperature (24 Hours)",
+        "title": `Siegmeyer's Temperature (${duration} Hours)`,
         "description": `\`\`\`${data.toString()}\`\`\``,
         "color": 0xFFFF
       });
@@ -453,9 +462,9 @@ client.on("message", async message => {
       });
       return message.channel.send({embed}).catch(O_o=>{});
     });
-    exec(`bash /glob/bin/tptde.sh 24`, function callback(error, stdout, stderr) {
+    exec(`bash /glob/bin/tptde.sh ${duration}`, function callback(error, stdout, stderr) {
       let embed = new Discord.RichEmbed({
-        "title": `PTDE Players (24 Hours)`,
+        "title": `PTDE Players (${duration} Hours)`,
         "description": `\`\`\`\n${stdout.toString()}\`\`\``,
         "color": 0xFFFF
       });
@@ -477,7 +486,7 @@ client.on("message", async message => {
       });
       return message.channel.send({embed}).catch(O_o=>{});
     });
-    exec(`bash /glob/bin/tkoarr.sh 24`, function callback(error, stdout, stderr) {
+    exec(`bash /glob/bin/tkoarr.sh ${duration}`, function callback(error, stdout, stderr) {
       let embed = new Discord.RichEmbed({
         "title": `KOA:RR Players (${duration}) Hours)`,
         "description": `\`\`\`\n${stdout.toString()}\`\`\``,
@@ -552,6 +561,21 @@ client.on("message", async message => {
     return message.channel.send({embed}); 
   }
 
+  if(command === "themain") {
+    exec('bash /glob/bin/scrape_steam_main.sh', function callback(error, stdout, stderr) {
+      title = "Online DSR Players (Steam - TheMain's Friend List)";
+      let embed = new Discord.RichEmbed({
+        "title": title,
+        "description": `${stdout}`,
+        "color": 0xFFFF
+      });
+      if(stdout != "" || stdout != "\n") {
+        return message.channel.send({embed}).catch(O_o=>{});
+      }
+    });
+    return;
+  }
+
   if(command === "fcf") {
     message.channel.send("https://www.youtube.com/watch?v=IgHu7OyB3aA");
     return 1;
@@ -566,6 +590,7 @@ client.on("message", async message => {
 
   if(command === "joke") {
     num = Math.floor(Math.random() * Math.floor(50));
+    console.log(num.toString());
     switch(num) {
       case 12:
         joke = "TheMain";
