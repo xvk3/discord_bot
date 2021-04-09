@@ -1,6 +1,6 @@
 Repository for messing around with Discord bots.
 
-Currently running on the DSR PC Discord Guild - https://discord.gg/HF4TyFt
+Currently running on the Siegmeyer Sanctuary Discord Guild - https://discord.gg/AXSFmxA7NA
 
 
 Planned features include:
